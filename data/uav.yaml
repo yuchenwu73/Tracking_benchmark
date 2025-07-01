@@ -1,0 +1,6 @@
+path: /data2/wuyuchen/Tracking_benchmark/data
+train: train.txt
+val: val.txt
+
+names:
+  0: drone

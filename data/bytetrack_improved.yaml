@@ -1,0 +1,8 @@
+# 改进的ByteTrack配置 - 减少ID浪费
+tracker_type: bytetrack
+track_high_thresh: 0.5    # 提高第一次关联阈值，减少误检测
+track_low_thresh: 0.1     # 降低第二次关联阈值，增加匹配机会
+new_track_thresh: 0.6     # 提高新轨迹初始化阈值，减少误检测
+track_buffer: 60          # 增加轨迹缓冲，减少过早删除
+match_thresh: 0.8         # 匹配阈值，平衡精度和召回
+fuse_score: True
