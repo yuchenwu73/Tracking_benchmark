@@ -11,7 +11,7 @@ if __name__ == '__main__':
     
     # Validate on GPU
     model = YOLO('/data2/wuyuchen/Tracking_benchmark/last.pt')
-    model.val(data='/data2/wuyuchen/Tracking_benchmark/data/uav.yaml',
+    model.val(data='dataset/data.yaml',
               imgsz=1088,
               batch=16,
               verbose = True,

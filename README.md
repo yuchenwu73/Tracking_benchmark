@@ -59,6 +59,8 @@ Tracking_benchmark/
 ```bash
 git clone https://github.com/yuchenwu73/Tracking_benchmark.git
 cd Tracking_benchmark
+conda create -n tracking python=3.9
+conda activate tracking
 pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
 ```

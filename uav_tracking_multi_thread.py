@@ -143,7 +143,7 @@ tracker = initialize_tracker("cfg/bytetrack_improved.yaml")
 
 # 打开视频文件
 # 注意：确保视频路径正确且可访问
-video_path = "/data2/wuyuchen/Tracking_benchmark/UAV/无人机/1.MOV"
+video_path = "UAV/1.MOV"
 cap = cv2.VideoCapture(video_path)
 
 # 获取视频基本信息
