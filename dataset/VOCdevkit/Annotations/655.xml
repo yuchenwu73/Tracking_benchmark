@@ -1,0 +1,26 @@
+<annotation>
+	<folder>trans2_wu</folder>
+	<filename>655.jpg</filename>
+	<path>D:\trans2\trans2_wu\trans2_wu\655.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>853</width>
+		<height>640</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Apron</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2</xmin>
+			<ymin>459</ymin>
+			<xmax>728</xmax>
+			<ymax>637</ymax>
+		</bndbox>
+	</object>
+</annotation>

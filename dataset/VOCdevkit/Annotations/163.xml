@@ -1,0 +1,26 @@
+<annotation>
+	<folder>photo</folder>
+	<filename>163.jpg</filename>
+	<path>D:\Code\Python_code\make_dataset_yolo\photo\163.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>500</width>
+		<height>264</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Apron</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>221</xmin>
+			<ymin>119</ymin>
+			<xmax>278</xmax>
+			<ymax>140</ymax>
+		</bndbox>
+	</object>
+</annotation>

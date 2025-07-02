@@ -1,0 +1,26 @@
+<annotation>
+	<folder>trans1_qi</folder>
+	<filename>493.jpg</filename>
+	<path>C:\Users\qjwic\Desktop\trans1_qi\493.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1200</width>
+		<height>801</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Apron</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>229</xmin>
+			<ymin>602</ymin>
+			<xmax>1194</xmax>
+			<ymax>795</ymax>
+		</bndbox>
+	</object>
+</annotation>

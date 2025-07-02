@@ -18,10 +18,26 @@ output*.jpg
 output*.png
 demo_screenshot*.png
 
-# 数据集和大文件
+# 数据集图片和标签文件（保留目录结构，忽略内容）
 UAV/
-data/images/
-data/labels/
+data/images/*.jpg
+data/images/*.png
+data/images/*.jpeg
+data/images/*.bmp
+data/images/*.tiff
+data/labels/*.txt
+data/labels/*.xml
+data/labels/*.json
+dataset/images/*.jpg
+dataset/images/*.png
+dataset/images/*.jpeg
+dataset/images/*.bmp
+dataset/images/*.tiff
+dataset/labels/*.txt
+dataset/labels/*.xml
+dataset/labels/*.json
+
+# 大文件压缩包
 *.zip
 *.tar.gz
 *.rar

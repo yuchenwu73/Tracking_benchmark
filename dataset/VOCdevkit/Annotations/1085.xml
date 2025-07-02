@@ -1,0 +1,26 @@
+<annotation>
+	<folder>trans_su</folder>
+	<filename>1085.jpg</filename>
+	<path>C:\Users\哎呦魏~\Desktop\trans_su\1085.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>600</width>
+		<height>400</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Apron</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1</xmin>
+			<ymin>51</ymin>
+			<xmax>106</xmax>
+			<ymax>294</ymax>
+		</bndbox>
+	</object>
+</annotation>

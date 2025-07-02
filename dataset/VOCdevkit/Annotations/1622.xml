@@ -1,0 +1,26 @@
+<annotation>
+	<folder>trans_xwz</folder>
+	<filename>1622.jpg</filename>
+	<path>C:\Users\哎呦魏~\Desktop\trans_xwz\1622.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>2592</width>
+		<height>1944</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Apron</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1333</xmin>
+			<ymin>8</ymin>
+			<xmax>2587</xmax>
+			<ymax>1835</ymax>
+		</bndbox>
+	</object>
+</annotation>
