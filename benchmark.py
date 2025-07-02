@@ -46,57 +46,57 @@ def check_onnx_gpu_support():
 
         cuda_available = 'CUDAExecutionProvider' in available_providers
 
-        print(f"📋 ONNX Runtime 可用提供者: {available_providers}")
+        print(f"ONNX Runtime 可用提供者: {available_providers}")
         if cuda_available:
-            print("✅ ONNX Runtime 支持 CUDA GPU 加速")
+            print("ONNX Runtime 支持 CUDA GPU 加速")
         else:
-            print("⚠️  ONNX Runtime 不支持 CUDA，将使用 CPU")
-            print("💡 安装GPU版本: pip install onnxruntime-gpu")
+            print("ONNX Runtime 不支持 CUDA，将使用 CPU")
+            print("安装GPU版本: pip install onnxruntime-gpu")
 
         return cuda_available
     except ImportError:
-        print("❌ ONNX Runtime 未安装")
+        print("ONNX Runtime 未安装")
         return False
     except Exception as e:
-        print(f"⚠️  检查ONNX Runtime时出错: {e}")
-        print("🔄 假设支持CPU，继续测试...")
+        print(f"检查ONNX Runtime时出错: {e}")
+        print("假设支持CPU，继续测试...")
         return False
 
 def setup_environment():
     """设置测试环境"""
-    print("🔧 设置测试环境...")
+    print("设置测试环境...")
 
     # 设置多进程启动方法，避免连接错误
     try:
         torch.multiprocessing.set_start_method('spawn', force=True)
-        print("✅ 多进程启动方法设置成功")
+        print("多进程启动方法设置成功")
     except RuntimeError as e:
-        print(f"⚠️  多进程设置警告: {e}")
+        print(f"多进程设置警告: {e}")
 
     # 检查ONNX Runtime GPU支持
-    print("\n🔍 检查ONNX Runtime GPU支持...")
+    print("\n检查ONNX Runtime GPU支持...")
     check_onnx_gpu_support()
 
     # 检查模型文件是否存在
     model_path = "last.pt"
     if not os.path.exists(model_path):
-        print(f"❌ 错误: 模型文件 {model_path} 不存在")
+        print(f"错误: 模型文件 {model_path} 不存在")
         sys.exit(1)
 
     # 检查数据配置文件是否存在
-    data_path = "data/uav.yaml"
+    data_path = "dataset/data.yaml"
     if not os.path.exists(data_path):
-        print(f"❌ 错误: 数据配置文件 {data_path} 不存在")
+        print(f"错误: 数据配置文件 {data_path} 不存在")
         sys.exit(1)
 
-    print(f"✅ 模型文件: {model_path}")
-    print(f"✅ 数据配置: {data_path}")
+    print(f"模型文件: {model_path}")
+    print(f"数据配置: {data_path}")
     return model_path, data_path
 
 def step1_baseline_validation(model_path, data_path):
     """步骤1: 基线模型验证"""
     print("\n" + "=" * 60)
-    print("📊 步骤1: 基线模型验证")
+    print("步骤1: 基线模型验证")
     print("=" * 60)
 
     try:
@@ -109,10 +109,10 @@ def step1_baseline_validation(model_path, data_path):
             verbose=True,
             device=0
         )
-        print("✅ 基线模型验证完成")
+        print("基线模型验证完成")
         return True
     except Exception as e:
-        print(f"❌ 基线模型验证失败: {e}")
+        print(f"基线模型验证失败: {e}")
         return False
 
 def professional_speed_test(model_path, device='0', batch_size=1, img_size=1088,
@@ -129,7 +129,7 @@ def professional_speed_test(model_path, device='0', batch_size=1, img_size=1088,
         test_runs: 测试次数
         half_precision: 是否使用半精度
     """
-    print(f"\n⚡ 专业级速度测试")
+    print(f"\n专业级速度测试")
     print(f"模型: {model_path}")
     print(f"设备: {device}")
     print(f"预热: {warmup_runs}次, 测试: {test_runs}次")
@@ -166,7 +166,7 @@ def professional_speed_test(model_path, device='0', batch_size=1, img_size=1088,
         example_inputs = example_inputs.half()
 
     # 5. 预热阶段
-    print(f"🔥 预热阶段...")
+    print(f"预热阶段...")
     with torch.no_grad():
         for i in tqdm(range(warmup_runs), desc='预热'):
             _ = model(example_inputs)
@@ -174,7 +174,7 @@ def professional_speed_test(model_path, device='0', batch_size=1, img_size=1088,
                 torch.cuda.synchronize()
 
     # 6. 正式测试
-    print(f"⏱️  正式测试...")
+    print(f"正式测试...")
     time_arr = []
 
     with torch.no_grad():
@@ -203,7 +203,7 @@ def professional_speed_test(model_path, device='0', batch_size=1, img_size=1088,
     fps = 1.0 / infer_time_per_image
 
     # 8. 结果报告
-    print(f"\n📊 速度测试结果:")
+    print(f"\n速度测试结果:")
     print(f"模型大小: {get_weight_size(model_path)} MB")
     print(f"平均推理时间: {mean_time*1000:.2f} ± {std_time*1000:.2f} ms")
     print(f"每张图片推理时间: {infer_time_per_image*1000:.2f} ms")
@@ -221,15 +221,15 @@ def test_onnx_speed(model_path, device, batch_size, img_size, warmup_runs, test_
     try:
         import onnxruntime as ort
     except ImportError:
-        print("❌ 需要安装 onnxruntime")
+        print("需要安装 onnxruntime")
         return None
 
-    print(f"� 测试ONNX模型: {model_path}")
+    print(f"测试ONNX模型: {model_path}")
 
     # 设置ONNX Runtime提供者 - 优先使用GPU
     if device == 'cpu':
         providers = ['CPUExecutionProvider']
-        print("✅ 使用CPU执行提供者")
+        print("使用CPU执行提供者")
     elif torch.cuda.is_available():
         # 检查CUDA执行提供者是否可用
         try:
@@ -240,13 +240,13 @@ def test_onnx_speed(model_path, device, batch_size, img_size, warmup_runs, test_
 
         if 'CUDAExecutionProvider' in available_providers:
             providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
-            print("✅ 使用CUDA执行提供者 (GPU加速)")
+            print("使用CUDA执行提供者 (GPU加速)")
         else:
             providers = ['CPUExecutionProvider']
-            print("⚠️  CUDA执行提供者不可用，回退到CPU")
+            print("CUDA执行提供者不可用，回退到CPU")
     else:
         providers = ['CPUExecutionProvider']
-        print("⚠️  CUDA不可用，使用CPU执行提供者")
+        print("CUDA不可用，使用CPU执行提供者")
 
     # 创建推理会话
     session = ort.InferenceSession(model_path, providers=providers)
@@ -263,12 +263,12 @@ def test_onnx_speed(model_path, device, batch_size, img_size, warmup_runs, test_
     example_inputs = np.random.randn(*input_shape).astype(np.float32)
 
     # 预热
-    print(f"🔥 ONNX预热...")
+    print(f"ONNX预热...")
     for _ in tqdm(range(warmup_runs), desc='预热'):
         _ = session.run(None, {input_name: example_inputs})
 
     # 测试
-    print(f"⏱️  ONNX测试...")
+    print(f"ONNX测试...")
     time_arr = []
 
     for _ in tqdm(range(test_runs), desc='测试'):
@@ -284,7 +284,7 @@ def test_onnx_speed(model_path, device, batch_size, img_size, warmup_runs, test_
     infer_time_per_image = mean_time / batch_size
     fps = 1.0 / infer_time_per_image
 
-    print(f"\n📊 ONNX测试结果:")
+    print(f"\nONNX测试结果:")
     print(f"平均推理时间: {mean_time*1000:.2f} ± {std_time*1000:.2f} ms")
     print(f"每张图片推理时间: {infer_time_per_image*1000:.2f} ms")
     print(f"推理速度 (FPS): {fps:.1f}")
@@ -298,7 +298,7 @@ def test_onnx_speed(model_path, device, batch_size, img_size, warmup_runs, test_
 def step2_torchscript_benchmark(model_path, data_path):
     """步骤2: TorchScript格式基准测试"""
     print("\n" + "=" * 60)
-    print("🚀 步骤2: TorchScript格式基准测试")
+    print("步骤2: TorchScript格式基准测试")
     print("=" * 60)
 
     try:
@@ -306,25 +306,25 @@ def step2_torchscript_benchmark(model_path, data_path):
         model = YOLO(model_path)
 
         # 导出TorchScript (在GPU上)
-        print("🔄 导出TorchScript格式...")
+        print("导出TorchScript格式...")
         model.to('cuda:0')  # 确保模型在GPU上
         ts_path = model.export(format='torchscript', imgsz=1088, device='cuda:0')
 
         # 测试TorchScript模型
-        print("🔄 测试TorchScript模型...")
+        print("测试TorchScript模型...")
         ts_model = YOLO(ts_path)
         _ = ts_model.val(data=data_path, imgsz=1088, batch=1, workers=0, verbose=True)
 
-        print("✅ TorchScript测试完成")
+        print("TorchScript测试完成")
         return True
     except Exception as e:
-        print(f"❌ TorchScript测试失败: {e}")
+        print(f"TorchScript测试失败: {e}")
         return False
 
 def step3_onnx_benchmark(model_path, data_path):
     """步骤3: ONNX格式基准测试"""
     print("\n" + "=" * 60)
-    print("🔧 步骤3: ONNX格式基准测试")
+    print("步骤3: ONNX格式基准测试")
     print("=" * 60)
 
     try:
@@ -332,17 +332,17 @@ def step3_onnx_benchmark(model_path, data_path):
         model = YOLO(model_path)
 
         # 导出ONNX (在GPU上)
-        print("🔄 导出ONNX格式...")
+        print("导出ONNX格式...")
         model.to('cuda:0')  # 确保模型在GPU上
         onnx_path = model.export(format='onnx', imgsz=1088, device='cuda:0')
 
         # 首先尝试GPU测试，失败则回退到CPU
-        print("🔄 测试ONNX模型...")
+        print("测试ONNX模型...")
         onnx_model = YOLO(onnx_path)
 
         # 尝试GPU测试
         try:
-            print("🚀 尝试在GPU上测试ONNX...")
+            print("尝试在GPU上测试ONNX...")
             _ = onnx_model.val(
                 data=data_path,
                 imgsz=1088,
@@ -351,10 +351,10 @@ def step3_onnx_benchmark(model_path, data_path):
                 device=0,  # 尝试使用GPU
                 verbose=True
             )
-            print("✅ ONNX GPU测试成功")
+            print("ONNX GPU测试成功")
         except Exception as gpu_e:
-            print(f"⚠️  GPU测试失败: {gpu_e}")
-            print("🔄 回退到CPU测试...")
+            print(f"GPU测试失败: {gpu_e}")
+            print("回退到CPU测试...")
             _ = onnx_model.val(
                 data=data_path,
                 imgsz=1088,
@@ -363,19 +363,19 @@ def step3_onnx_benchmark(model_path, data_path):
                 device='cpu',  # 回退到CPU
                 verbose=True
             )
-            print("✅ ONNX CPU测试成功")
+            print("ONNX CPU测试成功")
 
-        print("✅ ONNX基准测试完成")
+        print("ONNX基准测试完成")
         return True
     except Exception as e:
-        print(f"⚠️  ONNX基准测试失败: {e}")
-        print("💡 ONNX测试跳过，这通常是由于CUDA库版本问题")
+        print(f"ONNX基准测试失败: {e}")
+        print("ONNX测试跳过，这通常是由于CUDA库版本问题")
         return False
 
 def step4_professional_speed_test(model_path):
     """步骤4: 专业级速度测试"""
     print("\n" + "=" * 60)
-    print("⚡ 步骤4: 专业级速度测试")
+    print("步骤4: 专业级速度测试")
     print("=" * 60)
 
     formats = [
@@ -388,7 +388,7 @@ def step4_professional_speed_test(model_path):
 
     for model_file, format_name in formats:
         if Path(model_file).exists():
-            print(f"\n🧪 测试 {format_name} 格式...")
+            print(f"\n测试 {format_name} 格式...")
             try:
                 # 对于ONNX，使用GPU设备进行测试
                 device = '0' if model_file.endswith('.onnx') else '0'
@@ -403,14 +403,14 @@ def step4_professional_speed_test(model_path):
                 )
                 results[format_name] = result
             except Exception as e:
-                print(f"❌ {format_name} 测试失败: {e}")
+                print(f"{format_name} 测试失败: {e}")
                 results[format_name] = None
         else:
-            print(f"⚠️  {format_name} 模型文件不存在: {model_file}")
+            print(f"{format_name} 模型文件不存在: {model_file}")
 
     # 性能对比报告
     if results:
-        print(f"\n📈 性能对比报告:")
+        print(f"\n性能对比报告:")
         print(f"=" * 80)
         print(f"{'格式':<12} {'推理时间(ms)':<15} {'FPS':<10} {'相对性能':<10} {'模型大小(MB)':<12}")
         print(f"-" * 80)
@@ -438,7 +438,7 @@ def step4_professional_speed_test(model_path):
 def step4_speed_test(model_path):
     """步骤4: 实际推理速度测试"""
     print("\n" + "=" * 60)
-    print("⚡ 步骤4: 实际推理速度测试")
+    print("步骤4: 实际推理速度测试")
     print("=" * 60)
 
     try:
@@ -447,18 +447,18 @@ def step4_speed_test(model_path):
         test_images = glob.glob("data/images/*.jpg")[:10]  # 取前10张图片测试
 
         if not test_images:
-            print("❌ 未找到测试图片")
+            print("未找到测试图片")
             return False
 
-        print(f"🔄 使用 {len(test_images)} 张图片进行速度测试...")
+        print(f"使用 {len(test_images)} 张图片进行速度测试...")
 
         # 预热
-        print("🔥 预热模型...")
+        print("预热模型...")
         for _ in range(3):
             model.predict(test_images[0], imgsz=1088, verbose=False)
 
         # 正式测试
-        print("⏱️  开始速度测试...")
+        print("开始速度测试...")
         start_time = time.time()
         for img_path in test_images:
             _ = model.predict(img_path, imgsz=1088, verbose=False)
@@ -467,18 +467,18 @@ def step4_speed_test(model_path):
         avg_time = (end_time - start_time) / len(test_images)
         fps = 1.0 / avg_time
 
-        print(f"📊 平均推理时间: {avg_time*1000:.1f}ms")
-        print(f"📊 推理速度: {fps:.1f} FPS")
-        print("✅ 速度测试完成")
+        print(f"平均推理时间: {avg_time*1000:.1f}ms")
+        print(f"推理速度: {fps:.1f} FPS")
+        print("速度测试完成")
         return True
 
     except Exception as e:
-        print(f"❌ 速度测试失败: {e}")
+        print(f"速度测试失败: {e}")
         return False
 
 def run_complete_benchmark():
     """运行完整的模型基准测试"""
-    print("🎯 开始标准模型性能基准测试...")
+    print("开始标准模型性能基准测试...")
     print("=" * 60)
 
     # 设置环境
@@ -507,20 +507,20 @@ def run_complete_benchmark():
 
     # 总结结果
     print("\n" + "=" * 60)
-    print("📋 测试结果总结")
+    print("测试结果总结")
     print("=" * 60)
     for test_name, success in results.items():
-        status = "✅ 成功" if success else "❌ 失败"
+        status = "成功" if success else "失败"
         print(f"{test_name.upper():<12}: {status}")
 
     successful_tests = sum(results.values())
     total_tests = len(results)
-    print(f"\n🎯 总体结果: {successful_tests}/{total_tests} 项测试成功")
+    print(f"\n总体结果: {successful_tests}/{total_tests} 项测试成功")
 
     if successful_tests == total_tests:
-        print("🎉 所有测试完成!")
+        print("所有测试完成!")
     else:
-        print("⚠️  部分测试失败，但核心功能正常")
+        print("部分测试失败，但核心功能正常")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='标准模型性能基准测试')
@@ -537,7 +537,7 @@ if __name__ == '__main__':
 
     if args.speed_only:
         # 仅进行专业级速度测试
-        print("🎯 专业级速度测试模式")
+        print("专业级速度测试模式")
         professional_speed_test(
             model_path=args.weights,
             device=args.device,

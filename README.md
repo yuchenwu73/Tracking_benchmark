@@ -1,261 +1,124 @@
-# 🚁 无人机多目标跟踪系统
+# 无人机目标跟踪基准测试系统
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2.2-red.svg)](https://pytorch.org)
 [![YOLO](https://img.shields.io/badge/YOLO-v11-green.svg)](https://github.com/ultralytics/ultralytics)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 📖 项目简介
+## 项目简介
 
-本项目是一个专门针对**8K高分辨率视频**中无人机目标的**多目标检测与跟踪系统**。系统基于**YOLO11**目标检测模型和先进的多目标跟踪算法（**ByteTrack**），能够在高分辨率视频中准确检测和跟踪小型无人机目标。
+基于 YOLO11 的无人机目标检测与多目标跟踪系统，支持模型训练、验证和性能基准测试。
 
-## ✨ 主要特性
+## 主要功能
 
-- 🎯 **高精度检测**: 基于YOLO11模型的无人机目标检测
-- 🔄 **智能跟踪**: 改进的ByteTrack算法，减少ID跳跃，支持多目标同时跟踪
-- 📹 **8K视频支持**: 专门优化处理8K高分辨率视频，采用子图切分策略
-- ⚡ **高效处理**: 提供单线程和多线程两个版本，适应不同使用场景
-- 📊 **实时监控**: 显示帧数、进度、速度、目标数量等性能信息
-- 🎨 **可视化跟踪**: 绿色轨迹线显示运动路径，黄色ID显示在轨迹起始点
-- 🎮 **交互控制**: Q退出、R重置、F全屏、Space暂停等快捷键操作
+- **目标检测**: YOLO11 无人机检测模型
+- **多目标跟踪**: ByteTrack、BoT-SORT 等跟踪算法
+- **模型训练**: 支持自定义数据集训练
+- **性能验证**: 模型精度和速度评估
+- **基准测试**: 多算法性能对比
 
-## 📁 项目结构
+## 项目结构
 
 ```
 Tracking_benchmark/
-├── 📄 README.md                      # 项目说明文档
-├── 📄 LICENSE                        # MIT开源许可证
-├── 📋 requirements.txt               # Python依赖列表
-├── 🔒 .gitignore                     # Git忽略文件配置
-├── 🚀 uav_tracking_single_thread.py # 单线程跟踪脚本（推荐调试）
-├── 🚀 uav_tracking_multi_thread.py  # 多线程跟踪脚本（推荐生产）
-├── 📊 benchmark.py                  # 性能基准测试
-├── 🏋️ train.py                      # 模型训练脚本
-├── 🔧 yolo11.yaml                   # YOLO11模型配置
-├── 🐛 debug_tracking_ids.py         # 跟踪ID调试脚本
-├── ✅ model_validation.py           # 模型验证脚本
-├── 📁 Scripts/                     # 辅助脚本目录
-│   ├── 🔍 detect.py                # 单张图片检测
-│   ├── ⚡ get_FPS.py               # 性能测试
-│   ├── 🌡️ heatmap.py               # 热力图生成
-│   ├── 📊 main_profile.py          # 性能分析
-│   └── ✅ val.py                   # 验证脚本
-├── 📁 data/                         # 数据和配置目录
-│   ├── 🔧 bytetrack.yaml           # ByteTrack配置
-│   ├── 🔧 bytetrack_improved.yaml  # 改进的ByteTrack配置
-│   ├── 🔧 botsort.yaml             # BoT-SORT配置
-│   ├── 🔧 uav.yaml                 # 数据集配置
-│   ├── 📝 classes.txt              # 类别标签
-│   ├── 🖼️ images/                   # 图像数据（.gitignore忽略）
-│   │   └── .gitkeep               # 保持目录结构
-│   ├── 🏷️ labels/                   # 标注数据（.gitignore忽略）
-│   │   └── .gitkeep               # 保持目录结构
-│   ├── 📋 train.txt                # 训练集列表
-│   ├── 📋 val.txt                  # 验证集列表
-│   └── 🔄 update_dataset_paths.py  # 数据集路径更新脚本
-├── 📁 dataset/                     # 主数据集目录
-│   ├── 📄 README.md                # 数据集使用说明
-│   ├── 🖼️ images/                   # 训练图片（.gitignore忽略）
-│   │   └── .gitkeep               # 保持目录结构
-│   └── 🏷️ labels/                   # 训练标签（.gitignore忽略）
-│       └── .gitkeep               # 保持目录结构
-└── 📁 tracker/                     # 跟踪算法模块
-    ├── 🎯 bytetrack_tracker.py     # ByteTrack算法实现
-    ├── 🎯 botsort_tracker.py       # BoT-SORT算法实现
-    ├── 🎯 base_tracker.py          # 基础跟踪器
-    ├── 🎯 lightweight_tracker.py   # 轻量级跟踪器
-    └── 🛠️ utils/                    # 工具函数
+├── train.py                      # 模型训练
+├── val.py                        # 模型验证
+├── benchmark.py                  # 性能基准测试
+├── uav_tracking_single_thread.py # 单线程跟踪
+├── uav_tracking_multi_thread.py  # 多线程跟踪
+├── yolo11.yaml                   # YOLO11模型配置
+├── dataset/                      # 训练数据集
+│   ├── data.yaml                 # 数据集配置
+│   ├── images/                   # 训练图片
+│   └── labels/                   # 标注文件
+├── cfg/                          # 跟踪算法配置
+│   ├── bytetrack.yaml
+│   ├── bytetrack_improved.yaml
+│   └── botsort.yaml
+├── tracker/                      # 跟踪算法实现
+│   ├── bytetrack_tracker.py
+│   ├── botsort_tracker.py
+│   ├── base_tracker.py
+│   └── utils/
+└── Scripts/                      # 辅助工具
+    ├── detect.py                 # 单图检测
+    ├── get_FPS.py               # 性能测试
+    └── val.py                   # 验证脚本
 ```
 
-### 📝 说明
-- 🚫 **被.gitignore忽略的文件**: 大视频文件、模型文件(*.pt, *.onnx)、输出目录、缓存文件等
-- 📁 **输出目录**: `tracking_output_single_thread/` 和 `tracking_output_multi_thread/` 在运行时自动创建
+## 环境要求
 
-## 💻 环境要求
+- Python 3.9+
+- PyTorch 2.2.2 (CUDA 12.1)
+- Ultralytics 8.3.0+
+- OpenCV 4.10.0+
 
-### 🖥️ 系统要求
-- **Python**: 3.9+
-- **CUDA**: 12.1+ (推荐GPU加速)
-- **GPU显存**: 8GB+ (处理8K视频)
-- **操作系统**: Windows/Linux/macOS
-- **显示**: 支持GUI显示（MobaXterm等）
+## 快速开始
 
-### 📦 核心依赖
-- **PyTorch**: 2.2.2 (CUDA 12.1)
-- **OpenCV**: 4.10.0+ (视频处理)
-- **Ultralytics**: 8.3.0+ (YOLO11)
-- **NumPy**: 1.24.0+ (数值计算)
-
-## 🚀 安装指南
-
-### 1️⃣ 克隆项目
+### 安装依赖
 ```bash
 git clone https://github.com/yuchenwu73/Tracking_benchmark.git
 cd Tracking_benchmark
-```
-
-### 2️⃣ 安装PyTorch (CUDA版本)
-```bash
 pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
-```
-
-### 3️⃣ 安装其他依赖
-```bash
 pip install -r requirements.txt
 ```
 
-### 4️⃣ 验证安装
+### 模型训练
 ```bash
-python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"
+# 训练 YOLO11 模型
+python train.py
+
+# 验证模型性能
+python val.py
 ```
 
-### 5️⃣ 准备模型文件
-确保项目根目录下有训练好的模型文件：
-- `last.pt` - PyTorch模型（没有去训练，best.pt也可以）
-- `last.onnx` - ONNX模型（可选）
-
-## 🎬 快速开始
-
-### 1️⃣ 准备视频文件
-将你的无人机视频文件放在合适的位置，支持格式：
-- `.MOV`, `.mp4`, `.avi`, `.mkv` 等
-
-### 2️⃣ 修改视频路径
-在运行前，需要修改脚本中的视频路径：
-```python
-# 在 uav_tracking_single_thread.py 或 uav_tracking_multi_thread.py 中修改
-video_path = "UAV/无人机/你的视频文件.MOV"
-```
-
-### 3️⃣ 选择运行模式
+### 目标跟踪
 ```bash
-# 🔧 单线程版本（推荐调试使用）
+# 单线程跟踪（调试用）
 python uav_tracking_single_thread.py
 
-# 🚀 多线程版本（推荐生产使用）
-python uav_tracking_multi_thread.py
-
-# 📊 性能基准测试
-python benchmark.py
-```
-
-### 4️⃣ 交互控制
-运行后可使用以下快捷键：
-- **Q**: 退出程序
-- **R**: 重置跟踪
-- **F**: 切换全屏
-- **Space**: 暂停/继续
-- **鼠标点击**: 显示坐标
-
-## 📋 详细使用说明
-
-### 🔧 单线程版本 (推荐调试)
-```bash
-python uav_tracking_single_thread.py
-```
-
-**特点：**
-- ✅ 支持8K视频处理
-- ✅ 自动子图切分 (960x1080)
-- ✅ 实时性能监控
-- ✅ 轨迹可视化
-- ✅ 输出目录：`tracking_output_single_thread/`
-
-**适用场景：**
-- 🔍 调试开发
-- 📁 小文件处理
-- 🎯 精确控制
-
-### 🚀 多线程版本 (推荐生产)
-```bash
+# 多线程跟踪（生产用）
 python uav_tracking_multi_thread.py
 ```
 
-**特点：**
-- ⚡ 异步帧读取，减少I/O等待
-- 📦 队列缓冲机制，提升处理效率
-- 🎥 适合处理大型8K视频文件
-- 📈 更高的处理吞吐量
-- 📁 输出目录：`tracking_output_multi_thread/`
-
-**适用场景：**
-- 🏭 生产环境
-- 📹 大文件处理
-- ⚡ 追求性能
-
-### 📊 性能基准测试
+### 性能测试
 ```bash
+# 运行基准测试
 python benchmark.py
 ```
 
-**功能：**
-- 📈 多种跟踪算法性能对比
-- 📋 详细的性能统计报告
-- ⏱️ FPS和处理时间分析
-- 💾 结果保存到日志文件
+## 支持的跟踪算法
 
-## 🎯 跟踪结果说明
+- **ByteTrack**: 高性能多目标跟踪
+- **BoT-SORT**: 改进的跟踪算法
 
-### 📺 界面显示元素
-1. **🟡 黄色ID数字**: 目标跟踪ID，显示在轨迹起始点
-2. **🟢 绿色轨迹线**: 显示每个目标的历史运动路径
-3. **📊 实时信息**: 帧数、进度、速度、目标数量
-4. **🎮 操作提示**: 快捷键说明
+## 配置文件
 
-### 📈 性能信息
-- **Frame**: 当前帧/总帧数
-- **Progress**: 处理进度百分比
-- **Speed**: 实时处理速度 (FPS)
-- **Objects**: 当前检测到的目标数量
-
-## 🔧 配置说明
-
-### 📁 输出目录
-- `tracking_output_single_thread/` - 单线程版本输出
-- `tracking_output_multi_thread/` - 多线程版本输出
-- 每30帧保存一张跟踪结果图片
-- 最后一帧保存为 `final_frame.jpg`
-
-### ⚙️ 跟踪参数
-可在 `data/bytetrack_improved.yaml` 中调整：
+### 数据集配置 (dataset/data.yaml)
 ```yaml
-track_thresh: 0.6      # 跟踪阈值
-track_buffer: 30       # 跟踪缓冲帧数
-match_thresh: 0.8      # 匹配阈值
-frame_rate: 30         # 视频帧率
+path: dataset
+train: images
+val: images
+names:
+  0: drone
 ```
 
-## 🐛 常见问题 & 性能说明
+### 跟踪算法配置 (cfg/)
+- `bytetrack.yaml`: ByteTrack 参数
+- `bytetrack_improved.yaml`: 改进版 ByteTrack
+- `botsort.yaml`: BoT-SORT 参数
 
-### Q: 为什么ID会跳跃？
-A: 当目标过小或过大导致检测失败时，会出现轨迹断裂，同一目标可能获得多个ID。
+## 性能基准测试
 
-### Q: 如何提高跟踪性能？
-A:
-1. 使用多线程版本 (~2.5-3.0 FPS vs 单线程 ~1.5-2.0 FPS)
-2. 调整 `track_thresh` 参数 (推荐0.6)
-3. 确保GPU内存充足 (推荐8GB+)
-4. 支持视频格式：MP4、MOV、AVI、MKV等OpenCV兼容格式
+`benchmark.py` 提供完整的性能评估：
 
+- **模型验证**: 精度指标 (mAP, Precision, Recall)
+- **速度测试**: FPS 和推理时间
+- **格式对比**: PyTorch vs ONNX vs TorchScript
+- **跟踪算法对比**: 多种算法性能比较
 
+## 许可证
 
-## 🙏 致谢
-
-感谢以下开源项目的贡献：
-- [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) - YOLO11目标检测
-- [ByteTrack](https://github.com/ifzhang/ByteTrack) - 多目标跟踪算法
-- [BoT-SORT](https://github.com/NirAharon/BoT-SORT) - 改进的跟踪算法
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
-
-## 📧 联系方式
-
-如有问题或建议，请提交 [Issue](https://github.com/your-username/Tracking_benchmark/issues)
-
----
-
-⭐ 如果这个项目对你有帮助，请给个星标支持！
+MIT License - 详见 [LICENSE](LICENSE) 文件
 
 

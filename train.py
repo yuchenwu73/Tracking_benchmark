@@ -6,7 +6,7 @@ from ultralytics import YOLO
 if __name__ == '__main__':
     model = YOLO('yolo11.yaml')
     # model.load('yolov8n.pt') # loading pretrain weights
-    model.train(data='data/uav.yaml',
+    model.train(data='dataset/data.yaml',
                 cache=True,
                 imgsz=1088,  # 与验证时保持一致，更好检测小目标无人机
                 epochs=300,
@@ -19,5 +19,5 @@ if __name__ == '__main__':
                 # amp=False, # close amp
                 # fraction=0.2,
                 project='runs/train',
-                name='20250629_yolo11',
+                name='yolo11',
                 )

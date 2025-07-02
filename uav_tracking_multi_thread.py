@@ -137,7 +137,7 @@ model = YOLO("last.pt")
 # 初始化目标跟踪器
 # 使用改进的ByteTrack配置，优化ID分配机制，减少ID浪费
 # 配置特点：提高新轨迹创建阈值，增加轨迹缓冲时间，改善关联精度
-tracker = initialize_tracker("data/bytetrack_improved.yaml")
+tracker = initialize_tracker("cfg/bytetrack_improved.yaml")
 # tracker = initialize_tracker("data/bytetrack.yaml")  # 原始配置（ID浪费较多）
 # tracker = initialize_tracker("data/botsort.yaml")    # BoT-SORT（需要ReID特征）
 

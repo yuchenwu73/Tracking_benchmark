@@ -1,8 +1,0 @@
-# Dataset Labels Directory
-# 数据集标签目录
-# 
-# 使用说明：
-# 1. 将标注文件放在此目录下
-# 2. 支持格式：.txt, .xml, .json
-# 3. 标签文件被.gitignore忽略，不会上传到GitHub
-# 4. 此.gitkeep文件保持目录结构可见

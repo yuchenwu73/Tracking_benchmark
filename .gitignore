@@ -1,55 +1,12 @@
-# ===========================================
-# UAV Tracking Project .gitignore
-# ===========================================
-
-# ===== 大文件和媒体文件 =====
-# 视频文件
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.wmv
-*.flv
-*.webm
-
-# 图片文件（保留小的示例图片，忽略大批量输出）
-tracking_output*/
-output*.jpg
-output*.png
-demo_screenshot*.png
-
-# 数据集图片和标签文件（保留目录结构，忽略内容）
-UAV/
-data/images/*.jpg
-data/images/*.png
-data/images/*.jpeg
-data/images/*.bmp
-data/images/*.tiff
-data/labels/*.txt
-data/labels/*.xml
-data/labels/*.json
-dataset/images/*.jpg
-dataset/images/*.png
-dataset/images/*.jpeg
-dataset/images/*.bmp
-dataset/images/*.tiff
-dataset/labels/*.txt
-dataset/labels/*.xml
-dataset/labels/*.json
-
-# 大文件压缩包
-*.zip
-*.tar.gz
-*.rar
-
-# ===== Python 相关 =====
-# 字节码缓存
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
 
-# 分发/打包
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -63,26 +20,59 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
 # PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
-# 单元测试
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
 .pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -94,7 +84,24 @@ ipython_config.py
 # pyenv
 .python-version
 
-# 虚拟环境
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
 .env
 .venv
 env/
@@ -103,103 +110,137 @@ ENV/
 env.bak/
 venv.bak/
 
-# ===== 机器学习模型 =====
-# YOLO 模型文件
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Machine Learning / AI specific
+# Model files
 *.pt
+*.pth
 *.onnx
 *.torchscript
-*.engine
-*.trt
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.mlmodel
+*.coreml
 
-# 训练输出
+# Training outputs
 runs/
 logs/
 wandb/
-*.log
-nohup.out
+tensorboard/
+checkpoints/
+weights/
+models/
 
-# 缓存文件
-*.cache
+# Dataset files (keep structure but ignore large files)
+*.bmp
+*.tiff
+*.tif
+*.gif
+*.webp
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
 
-# ===== IDE 和编辑器 =====
-# VSCode
+# Keep dataset structure files
+!dataset/data.yaml
+!dataset/*.py
+!dataset/*.txt
+!dataset/*.json
+!dataset/*.xml
+!dataset/images/
+!dataset/labels/
+
+# Tracking outputs
+tracking_output_*/
+output*.jpg
+output*.png
+demo_screenshot*.png
+
+# Video files
+*.MOV
+*.mp4
+*.avi
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.mov
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.DS_Store
+Thumbs.db
+
+# IDE files
 .vscode/
-*.code-workspace
-
-# PyCharm
 .idea/
-*.iws
-*.iml
-*.ipr
-
-# Sublime Text
-*.sublime-project
-*.sublime-workspace
-
-# Vim
 *.swp
 *.swo
 *~
 
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
-
-# ===== 操作系统 =====
-# macOS
+# OS generated files
 .DS_Store
-.AppleDouble
-.LSOverride
-Icon
+.DS_Store?
 ._*
-.DocumentRevisions-V100
-.fseventsd
 .Spotlight-V100
-.TemporaryItems
 .Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Windows
-Thumbs.db
 ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.cab
-*.msi
-*.msm
-*.msp
-*.lnk
+Thumbs.db
 
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
+# CUDA cache
+.nv/
 
-# ===== 临时文件 =====
-*.tmp
-*.temp
+# Profiling data
+*.prof
+
+# Backup files
 *.bak
 *.backup
-*.orig
 
-# ===== 配置文件（可选保留） =====
-# 如果有敏感配置，取消下面的注释
-# config.json
-# settings.ini
-# .env.local
+# Custom project specific
+# Keep configuration files but ignore sensitive ones
+!cfg/*.yaml
+!cfg/*.yml
+!cfg/*.json
 
-# ===== 项目特定 =====
-# 测试输出
-test_output/
-debug_output/
-benchmark_results/
+# Keep requirements and setup files
+!requirements.txt
+!setup.py
+!pyproject.toml
 
+# Keep documentation
+!README.md
+!LICENSE
+!*.md
+
+# Keep scripts but ignore outputs
+!Scripts/
+Scripts/output/
+Scripts/temp/

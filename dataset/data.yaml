@@ -1,12 +1,15 @@
-# dataset path
-path: /data2/wuyuchen/ultralytics-20240309/
-train: ./dataset/images/train
-val: ./dataset/images/val
-test: ./dataset/images/test
+# path: /data2/wuyuchen/ultralytics-20240309/
+# train: ./dataset/images/train
+# val: ./dataset/images/val
+# test: ./dataset/images/test
+# nc: 1
+# names: ['drone']
 
-# number of classes
-nc: 1
+path: /data2/wuyuchen/Tracking_benchmark/
+train: dataset/images/train 
+val: dataset/images/val   
 
-# class names
-names: ['Apron']
 
+nc: 1  # 类别数量
+
+names: ['drone']  # 类别名称

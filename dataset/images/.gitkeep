@@ -1,8 +1,0 @@
-# Dataset Images Directory
-# 数据集图片目录
-# 
-# 使用说明：
-# 1. 将训练图片放在此目录下
-# 2. 支持格式：.jpg, .png, .jpeg, .bmp, .tiff
-# 3. 图片文件被.gitignore忽略，不会上传到GitHub
-# 4. 此.gitkeep文件保持目录结构可见
