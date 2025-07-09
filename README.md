@@ -99,7 +99,8 @@ data/
 python Scripts/video_to_yolo_dataset.py
 
 # 82划分数据集
-python dataset/split_data.py
+cd dataset
+python split_data.py
 ```
 
 ### 4. 模型训练

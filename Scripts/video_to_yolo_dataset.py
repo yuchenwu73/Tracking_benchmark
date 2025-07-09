@@ -74,8 +74,7 @@ def parse_csv_annotations(csv_path):
         # 过滤无效标注
         # 1. 过滤宽高小于等于0的无效框
         # 2. 过滤坐标异常的框（负坐标）
-        # 3. 过滤track_id为0或负数的无效目标（根据MOT格式，track_id应该从1开始）
-        if w <= 0 or h <= 0 or x < 0 or y < 0 or track_id <= 0:
+        if w <= 0 or h <= 0 or x < 0 or y < 0:
             invalid_count += 1
             continue
 
@@ -244,10 +243,34 @@ def main():
     # data/val -> test格式
     test_images_dir = output_path / "images" / "test"
 
-    # 清理并创建目录
-    if output_path.exists():
-        shutil.rmtree(output_path)
+    # 只清理目标目录的内容，保留data.yaml和.gitkeep文件
+    # 清理VOCdevkit目录
+    if voc_images_dir.exists():
+        for item in voc_images_dir.iterdir():
+            if item.name != '.gitkeep':
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
 
+    if voc_labels_dir.exists():
+        for item in voc_labels_dir.iterdir():
+            if item.name != '.gitkeep':
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+
+    # 清理test目录
+    if test_images_dir.exists():
+        for item in test_images_dir.iterdir():
+            if item.name != '.gitkeep':
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+
+    # 创建目录（如果不存在）
     voc_images_dir.mkdir(parents=True, exist_ok=True)
     voc_labels_dir.mkdir(parents=True, exist_ok=True)
     test_images_dir.mkdir(parents=True, exist_ok=True)
@@ -295,8 +318,8 @@ def main():
     else:
         print(f"警告: 测试数据目录不存在: {test_data_dir}")
 
-    # 生成数据集配置文件
-    create_dataset_yaml(output_path)
+    # 跳过生成data.yaml文件（用户已手动配置）
+    print("注意: 跳过生成data.yaml文件，使用现有配置")
 
     print("\n" + "=" * 60)
     print("数据转换完成！")

@@ -7,7 +7,7 @@ from ultralytics import YOLO
 
 if __name__ == '__main__':
     model = YOLO('yolo11m.yaml')
-    # model.load('yolo11m.pt') # pretrain weights
+    model.load('yolo11m.pt') # pretrain weights
     model.train(data='dataset/data.yaml',
                 cache=True,
                 imgsz=1280, 
@@ -21,5 +21,5 @@ if __name__ == '__main__':
                 # amp=False, # close amp
                 # fraction=0.2,
                 project='runs/train',
-                name='no_pretrain_yolo11m_imgsz1280_epoch300_bs8',
+                name='20250709_1445_no_pretrain_yolo11m_imgsz1280_epoch300_bs8',
                 )
