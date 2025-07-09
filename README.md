@@ -1,4 +1,4 @@
-# 无人机目标跟踪基准测试系统
+# 弱小目标检测跟踪基准测试系统
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2.2-red.svg)](https://pytorch.org)
@@ -7,42 +7,54 @@
 
 ## 项目简介
 
-基于 YOLO11 的无人机目标检测与多目标跟踪系统，支持模型训练、验证和性能基准测试。
+基于 YOLO11 的弱小目标检测与多目标跟踪系统，专门针对卫星视频中的车辆检测跟踪任务进行优化。支持完整的数据处理、模型训练、验证和性能基准测试流程。
 
-## 主要功能
-
-- **目标检测**: YOLO11 无人机检测模型
-- **多目标跟踪**: ByteTrack、BoT-SORT 等跟踪算法
-- **模型训练**: 支持自定义数据集训练
-- **性能验证**: 模型精度和速度评估
-- **基准测试**: 多算法性能对比
 
 ## 项目结构
 
 ```
 Tracking_benchmark/
-├── train.py                      # 模型训练
+├── train.py                      # 模型训练（小目标优化）
 ├── val.py                        # 模型验证
 ├── benchmark.py                  # 性能基准测试
 ├── uav_tracking_single_thread.py # 单线程跟踪
 ├── uav_tracking_multi_thread.py  # 多线程跟踪
 ├── yolo11.yaml                   # YOLO11模型配置
-├── dataset/                      # 训练数据集
-│   ├── data.yaml                 # 数据集配置
-│   ├── images/                   # 训练图片
-│   └── labels/                   # 标注文件
+├── data/                         # 原始数据
+│   ├── train/                    # 训练视频和标注
+│   │   ├── *.avi                 # 视频文件
+│   │   └── *-gt.csv             # CSV标注文件
+│   └── val/                      # 测试视频
+│       └── *.avi                 # 测试视频文件
+├── dataset/                      # 处理后的数据集
+│   ├── VOCdevkit/               # 训练数据存储目录（YOLO格式）
+│   │   ├── JPEGImages/          # 所有训练图像（未拆分）
+│   │   └── txt/                 # YOLO格式标注文件
+│   ├── images/                  # 标准YOLO目录结构
+│   │   ├── train/               # 训练图像（手动拆分后）
+│   │   ├── val/                 # 验证图像（手动拆分后）
+│   │   └── test/                # 测试图像（无标注）
+│   ├── labels/                  # 标准YOLO标注目录
+│   │   ├── train/               # 训练标注（手动拆分后）
+│   │   └── val/                 # 验证标注（手动拆分后）
+│   └── data.yaml                # 数据集配置
 ├── cfg/                          # 跟踪算法配置
 │   ├── bytetrack.yaml
-│   ├── bytetrack_improved.yaml
+│   ├── bytetrack_improved.yaml  # 优化的ByteTrack配置
 │   └── botsort.yaml
 ├── tracker/                      # 跟踪算法实现
 │   ├── bytetrack_tracker.py
 │   ├── botsort_tracker.py
 │   ├── base_tracker.py
 │   └── utils/
-└── Scripts/                      # 辅助工具
-    ├── detect.py                 # 单图检测
+└── Scripts/                      # 数据处理和分析工具
+    ├── video_to_yolo_dataset.py  # 视频转数据集
+    ├── check_video_resolution.py # 检查视频分辨率
+    ├── convert_to_competition_format.py # 转换为竞赛格式
+    ├── detect.py                # 单图检测
     ├── get_FPS.py               # 性能测试
+    ├── heatmap.py               # 热力图生成
+    ├── main_profile.py          # 模型性能分析
     └── val.py                   # 验证脚本
 ```
 
@@ -55,7 +67,7 @@ Tracking_benchmark/
 
 ## 快速开始
 
-### 安装依赖
+### 1. 环境安装
 ```bash
 git clone https://github.com/yuchenwu73/Tracking_benchmark.git
 cd Tracking_benchmark
@@ -65,59 +77,68 @@ pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https
 pip install -r requirements.txt
 ```
 
-### 模型训练
+### 2. 数据准备
+将原始数据放入 `data/` 目录：
+```
+data/
+├── train/          # 训练数据
+│   ├── 1-2.avi
+│   ├── 1-2-gt.csv
+│   ├── 2-7.avi
+│   ├── 2-7-gt.csv
+│   └── ...
+└── val/            # 测试数据
+    ├── 5-1.avi
+    ├── 14-2.avi
+    └── ...
+```
+
+### 3. 数据转换
 ```bash
-# 训练 YOLO11 模型
+# 将视频数据转换为YOLO训练格式
+python Scripts/video_to_yolo_dataset.py
+
+# 82划分数据集
+python dataset/split_data.py
+```
+
+### 4. 模型训练
+
+```bash
+# 1. 配置好数据集路径 dataset/data.yaml
+path: /to/your/path
+train: images/train  # 训练图像目录
+val: images/val    # 验证图像目录
+test: images/test            # 测试集（无标注）
+
+# 类别定义
+nc: 1
+names:
+  0: vehicle  # 车辆类别
+
+
+# 2. 训练小目标检测模型
 python train.py
 
-# 验证模型性能
+# 3. 验证模型性能
 python val.py
 ```
 
-### 目标跟踪
+### 5. 目标跟踪
 ```bash
-# 单线程跟踪（调试用）
+# 单线程跟踪
 python uav_tracking_single_thread.py
 
-# 多线程跟踪（生产用）
+# 多线程跟踪（推荐）
 python uav_tracking_multi_thread.py
 ```
 
-### 性能测试
+### 6. 性能评估
 ```bash
-# 运行基准测试
+# 运行完整基准测试
 python benchmark.py
 ```
 
-## 支持的跟踪算法
-
-- **ByteTrack**: 高性能多目标跟踪
-- **BoT-SORT**: 改进的跟踪算法
-
-## 配置文件
-
-### 数据集配置 (dataset/data.yaml)
-```yaml
-path: dataset
-train: images
-val: images
-names:
-  0: drone
-```
-
-### 跟踪算法配置 (cfg/)
-- `bytetrack.yaml`: ByteTrack 参数
-- `bytetrack_improved.yaml`: 改进版 ByteTrack
-- `botsort.yaml`: BoT-SORT 参数
-
-## 性能基准测试
-
-`benchmark.py` 提供完整的性能评估：
-
-- **模型验证**: 精度指标 (mAP, Precision, Recall)
-- **速度测试**: FPS 和推理时间
-- **格式对比**: PyTorch vs ONNX vs TorchScript
-- **跟踪算法对比**: 多种算法性能比较
 
 ## 许可证
 

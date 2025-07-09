@@ -2,15 +2,17 @@ import warnings
 warnings.filterwarnings('ignore')
 from ultralytics import YOLO
 
+# nohup python train.py > logs/yolo11m_imgsz640_epoch300_bs32.log 2>&1 &
+
 
 if __name__ == '__main__':
-    model = YOLO('yolo11.yaml')
-    # model.load('yolov8n.pt') # loading pretrain weights
+    model = YOLO('yolo11m.yaml')
+    model.load('yolo11m.pt') # loading pretrain weights
     model.train(data='dataset/data.yaml',
                 cache=True,
-                imgsz=1088,  # 与验证时保持一致，更好检测小目标无人机
+                imgsz=640,  # 可以调整为32的倍数，例如1280等
                 epochs=300,
-                batch=32,  # 由于使用imgsz=1088，减少batch size以避免GPU内存不足
+                batch=32,   # 爆显存了要调整
                 close_mosaic=10,
                 workers=8,
                 device='7',
@@ -19,5 +21,6 @@ if __name__ == '__main__':
                 # amp=False, # close amp
                 # fraction=0.2,
                 project='runs/train',
-                name='yolo11',
+                name='yolo11m_imgsz640_epoch300_bs32',
                 )
+

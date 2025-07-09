@@ -132,7 +132,7 @@ def draw_tracks(frame, track_history):
 
 # 初始化YOLO模型
 # 使用预训练的权重文件'last.pt'
-model = YOLO("last.pt")
+model = YOLO("runs/train/no_pretrain_yolo11m_imgsz1280_epoch300_bs82/weights/best.pt")
 
 # 初始化目标跟踪器
 # 使用改进的ByteTrack配置，优化ID分配机制，减少ID浪费
@@ -143,7 +143,7 @@ tracker = initialize_tracker("cfg/bytetrack_improved.yaml")
 
 # 打开视频文件
 # 注意：确保视频路径正确且可访问
-video_path = "UAV/1.MOV"
+video_path = "data/val/5-1.avi"
 cap = cv2.VideoCapture(video_path)
 
 # 获取视频基本信息

@@ -130,7 +130,6 @@ dmypy.json
 
 # Machine Learning / AI specific
 # Model files
-*.pt
 *.pth
 *.onnx
 *.torchscript
@@ -165,15 +164,10 @@ models/
 *.wmv
 *.flv
 *.webm
+*.csv
+*.jpg
+*.txt
 
-# Keep dataset structure files
-!dataset/data.yaml
-!dataset/*.py
-!dataset/*.txt
-!dataset/*.json
-!dataset/*.xml
-!dataset/images/
-!dataset/labels/
 
 # Tracking outputs
 tracking_output_*/

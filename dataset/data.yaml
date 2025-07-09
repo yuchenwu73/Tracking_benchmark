@@ -1,15 +1,12 @@
-# path: /data2/wuyuchen/ultralytics-20240309/
-# train: ./dataset/images/train
-# val: ./dataset/images/val
-# test: ./dataset/images/test
-# nc: 1
-# names: ['drone']
+# 弱小目标检测跟踪数据集配置 - 车辆检测
+path: /data2/wuyuchen/Tracking_benchmark/dataset
+train: images/train  # 训练图像目录
+val: images/val    # 验证图像目录
+test: images/test            # 测试集（无标注）
 
-path: /data2/wuyuchen/Tracking_benchmark/
-train: dataset/images/train 
-val: dataset/images/val   
+# 类别定义
+nc: 1
+names:
+  0: vehicle  # 车辆类别
 
 
-nc: 1  # 类别数量
-
-names: ['drone']  # 类别名称
