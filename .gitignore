@@ -130,6 +130,7 @@ dmypy.json
 
 # Machine Learning / AI specific
 # Model files
+*.pt
 *.pth
 *.onnx
 *.torchscript

@@ -78,7 +78,7 @@ def setup_environment():
     check_onnx_gpu_support()
 
     # 检查模型文件是否存在
-    model_path = "last.pt"
+    model_path = "/data2/wuyuchen/Tracking_benchmark/runs/train/yolo11m_imgsz1280_epoch300_bs83/weights/best.pt"
     if not os.path.exists(model_path):
         print(f"错误: 模型文件 {model_path} 不存在")
         sys.exit(1)
@@ -524,7 +524,7 @@ def run_complete_benchmark():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='标准模型性能基准测试')
-    parser.add_argument('--weights', type=str, default='last.pt', help='模型权重路径')
+    parser.add_argument('--weights', type=str, default='/data2/wuyuchen/Tracking_benchmark/runs/train/yolo11m_imgsz1280_epoch300_bs83/weights/last.pt', help='模型权重路径')
     parser.add_argument('--device', default='0', help='设备: 0, cpu等')
     parser.add_argument('--batch', type=int, default=1, help='批次大小')
     parser.add_argument('--imgsz', type=int, default=1088, help='图像尺寸')

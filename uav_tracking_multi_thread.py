@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
 """
-无人机多目标跟踪系统 - 多线程优化版本
+无人机多目标跟踪系统 - 官方API + 优化GUI版本
 支持8K视频实时处理，具备完整的轨迹可视化和性能监控功能
 
 主要特性：
-- 多线程异步帧读取，提升处理效率
-- 子图分割处理，支持超高分辨率视频
+- 使用YOLO官方内置跟踪器（BoT-SORT/ByteTrack）
 - 智能轨迹绘制：黄色ID显示在轨迹起始点，绿色轨迹线
-- 优化的ID分配机制，减少ID浪费
 - 详细的性能统计和监控
 - 可调整窗口大小和全屏显示
 - 支持暂停/继续播放
+- 实时跟踪器切换功能
 
 核心算法：
-- YOLO目标检测 + ByteTrack多目标跟踪
-- 改进的轨迹关联算法，提高跟踪稳定性
-- 智能ID管理，减少因检测失败导致的ID跳跃
+- YOLO官方内置跟踪器（默认BoT-SORT）
+- 官方推荐的persist=True逐帧处理
+- 完全对齐官方最佳实践
 
 使用说明：
 - Q: 退出程序
 - R: 重置窗口大小
 - F: 切换全屏
 - Space: 暂停/继续
+- T: 切换跟踪器类型
+
 - 鼠标左键: 显示坐标
 
 """
@@ -37,49 +38,29 @@ from collections import defaultdict  # 用于轨迹历史记录的默认字典
 import cv2  # OpenCV图像处理库
 import numpy as np  # 数值计算库
 from tqdm import tqdm  # 进度条显示
-# 导入YOLO工具类 - 修复版本兼容性问题
-from ultralytics.utils import IterableSimpleNamespace, YAML
-from ultralytics.utils.checks import check_yaml
-from ultralytics.engine.results import Results, Boxes
 
-# 创建yaml_load函数的兼容版本
-def yaml_load(file_path):
-    """兼容的YAML加载函数"""
-    yaml_instance = YAML()
-    return yaml_instance.load(file_path)
 
-# 导入跟踪器实现
-from tracker.bytetrack_tracker import BYTETracker
-from tracker.botsort_tracker import BOTSORT
+# 使用YOLO官方内置跟踪器，无需导入自定义跟踪器
 
-# 定义可用的跟踪器映射字典
-# 支持两种跟踪器：ByteTrack和BoT-SORT
-TRACKER_MAP = {"bytetrack": BYTETracker, "botsort": BOTSORT}
+# 定义可用的跟踪器类型
+AVAILABLE_TRACKERS = ["botsort", "bytetrack"]
 
-def initialize_tracker(tracker_yaml: str, frame_rate: int = 30):
+def get_tracker_config(tracker_type):
     """
-    初始化目标跟踪器
+    获取跟踪器配置
 
-    参数说明：
-        tracker_yaml: 跟踪器配置文件的路径，包含跟踪器的参数设置
-        frame_rate: 视频帧率，用于跟踪器的时间计算，默认30fps
+    参数:
+        tracker_type: 跟踪器类型 ("botsort", "bytetrack")
 
-    返回值：
-        初始化好的跟踪器实例
+    返回:
+        跟踪器配置字符串或None（None表示使用默认BoT-SORT）
     """
-    # 加载并解析配置文件
-    try:
-        tracker_cfg = IterableSimpleNamespace(**yaml_load(check_yaml(tracker_yaml)))
-    except Exception as e:
-        print(f"配置文件加载失败: {e}")
-        # 使用默认配置
-        tracker_cfg = IterableSimpleNamespace(tracker_type="bytetrack")
-
-    tracker_type = getattr(tracker_cfg, 'tracker_type', 'bytetrack')
-    # 检查跟踪器类型是否支持
-    if tracker_type not in TRACKER_MAP:
-        raise ValueError(f"不支持的跟踪器类型: {tracker_type}")
-    return TRACKER_MAP[tracker_type](args=tracker_cfg, frame_rate=frame_rate)
+    if tracker_type == "bytetrack":
+        return "/data2/wuyuchen/Tracking_benchmark/cfg/bytetrack.yaml"
+    elif tracker_type == "botsort":
+        return "/data2/wuyuchen/Tracking_benchmark/cfg/botsort.yaml"
+    else:
+        return None  # 使用默认跟踪器（BoT-SORT）
 
 def mouse_callback(event, x, y, flags, param):
     """
@@ -90,6 +71,8 @@ def mouse_callback(event, x, y, flags, param):
         print(f"Mouse click at: ({x}, {y})")
     elif event == cv2.EVENT_RBUTTONDOWN:
         print(f"Right click at: ({x}, {y})")
+
+
 
 def draw_tracks(frame, track_history):
     """
@@ -113,7 +96,7 @@ def draw_tracks(frame, track_history):
         # 绘制轨迹线：如果轨迹点数大于1，用绿色线条连接所有历史位置
         if len(track) > 1:
             points = np.array(track).astype(np.int32).reshape((-1, 1, 2))
-            cv2.polylines(frame, [points], isClosed=False, color=(0, 255, 0), thickness=2)
+            cv2.polylines(frame, [points], isClosed=False, color=(0, 255, 0), thickness=4)
 
         # 绘制目标ID：在轨迹起始点显示黄色ID数字
         if len(track) > 0:
@@ -123,28 +106,32 @@ def draw_tracks(frame, track_history):
                 str(track_id),  # 显示轨迹ID（可能不连续，如1,3,9,30等）
                 start_point,    # 显示位置：轨迹的第一个点（起始位置）
                 cv2.FONT_HERSHEY_SIMPLEX,
-                3,              # 字体大小
+                1.2,            # 字体大小（从3减小到1.2，更合适的大小）
                 (0, 255, 255),  # 黄色 (BGR格式: 蓝=0, 绿=255, 红=255)
-                3,              # 字体粗细
+                2,              # 字体粗细（从3减小到2）
                 cv2.LINE_AA     # 抗锯齿
             )
     return frame
 
 # 初始化YOLO模型
-# 使用预训练的权重文件'last.pt'
-model = YOLO("runs/train/no_pretrain_yolo11m_imgsz1280_epoch300_bs82/weights/best.pt")
+# 使用预训练的权重文件'best.pt'
+model = YOLO("/data2/wuyuchen/Tracking_benchmark/runs/train/20250809_2327_yolo11m_imgsz1280_epoch300_bs8/weights/best.pt")
 
-# 初始化目标跟踪器
-# 使用改进的ByteTrack配置，优化ID分配机制，减少ID浪费
-# 配置特点：提高新轨迹创建阈值，增加轨迹缓冲时间，改善关联精度
-tracker = initialize_tracker("cfg/bytetrack_improved.yaml")
-# tracker = initialize_tracker("data/bytetrack.yaml")  # 原始配置（ID浪费较多）
-# tracker = initialize_tracker("data/botsort.yaml")    # BoT-SORT（需要ReID特征）
+# 初始化跟踪器类型
+# 使用官方YOLO内置跟踪器，更稳定可靠
+current_tracker = "botsort"  # 可选: "botsort" (默认), "bytetrack"
+print(f"🔧 使用跟踪器: {current_tracker}")
+
+# 全局变量用于跟踪器切换
+tracker_config = get_tracker_config(current_tracker)
 
 # 打开视频文件
 # 注意：确保视频路径正确且可访问
-video_path = "data/val/5-1.avi"
+video_path = "/data2/wuyuchen/Tracking_benchmark/data/train/1-2.avi"  # 使用比赛验证集视频
 cap = cv2.VideoCapture(video_path)
+
+# 获取视频文件名（不含扩展名）用于保存比赛结果
+video_name = os.path.splitext(os.path.basename(video_path))[0]
 
 # 获取视频基本信息
 fps = cap.get(cv2.CAP_PROP_FPS)  # 视频帧率
@@ -163,18 +150,49 @@ rows = height // sub_height  # 垂直分割数
 # 使用defaultdict自动创建新目标的轨迹列表
 track_history = defaultdict(lambda: [])
 
+
+frame_processing_times = []  # 存储每帧的处理时间
+
 # 创建可调整大小的窗口
 window_name = "YOLO目标跟踪系统(多线程版) - 按Q退出"
-cv2.namedWindow(window_name, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # 允许调整窗口大小并保持比例
 
-print("🖥️  Window Controls:")
-print("   - Drag window edges to resize")
-print("   - Click top-right buttons to maximize/minimize/close")
-print("   - Press Q to exit")
-print("   - Press R to reset window size")
-print("   - Press F to toggle fullscreen")
-print("   - Press SPACE to pause/resume")
-print("   - Left click to show coordinates")
+# 检查OpenCV GUI支持并创建窗口
+gui_available = True
+try:
+    # 检查DISPLAY环境变量
+    import os
+    if not os.environ.get('DISPLAY'):
+        print("⚠️ 没有DISPLAY环境变量，将使用无GUI模式")
+        gui_available = False
+    else:
+        # 尝试创建窗口
+        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # 允许调整窗口大小并保持比例
+        print("✅ OpenCV GUI支持正常")
+except Exception as e:
+    print(f"❌ OpenCV GUI错误: {e}")
+    print("� 尝试解决方案:")
+    print("   1. 检查DISPLAY环境变量: echo $DISPLAY")
+    print("   2. 在MobaXterm中启用X11转发")
+    print("   3. 重新安装opencv-python: pip uninstall opencv-python && pip install opencv-python")
+    print("   4. 或安装带GUI支持的版本: pip install opencv-contrib-python")
+    gui_available = False
+    print("⚠️  将在无GUI模式下运行，仅显示处理进度")
+
+if gui_available:
+    print("�🖥️  Window Controls:")
+    print("   - Drag window edges to resize")
+    print("   - Click top-right buttons to maximize/minimize/close")
+    print("   - Press Q to exit")
+    print("   - Press R to reset window size")
+    print("   - Press F to toggle fullscreen")
+    print("   - Press SPACE to pause/resume")
+    print("   - Press T to switch tracker")
+    print("   - Press S to save current frame")
+    print("   - Left click to show coordinates")
+else:
+    print("🖥️  无GUI模式:")
+    print("   - 处理结果将保存到输出目录")
+    print("   - 按Ctrl+C停止处理")
 
 # 初始化性能统计
 frame_processing_times = []
@@ -294,34 +312,35 @@ with tqdm(total=total_frames, desc="Processing Video", unit="frame") as pbar:
         else:
             detections = np.array([])
 
-        # 将检测结果转换为YOLO的Boxes格式
-        if len(detections) > 0:
-            detections = Boxes(detections, frame.shape)
-        else:
-            detections = Boxes(np.empty((0, 6)), frame.shape)
+        # 使用官方YOLO跟踪API
+        track_start = time.time()
 
-        # 更新目标跟踪器
-        tracks = tracker.update(detections, frame)
+        # 根据当前跟踪器类型进行跟踪
+        if tracker_config:
+            results = model.track(frame, persist=True, tracker=tracker_config)
+        else:
+            results = model.track(frame, persist=True)  # 使用默认BoT-SORT
+
         timing["track"] = time.time() - track_start
 
         # 绘制检测和跟踪结果
         draw_start = time.time()
 
         # 检查是否有有效的跟踪结果
-        if len(tracks) > 0 and tracks.ndim == 2:
-            # 有跟踪结果时的处理
-            all_detections = Results(frame, path="", names=model.predictor.model.names, boxes=torch.as_tensor(tracks[:, :-1]))
-
-            # 绘制检测框
-            anno_frame = all_detections.plot(img=frame, line_width=5, font_size=5)
+        if results[0].boxes and results[0].boxes.is_track:
+            # 绘制检测框（调整线条粗细为更细的边界框，减小字体大小）
+            anno_frame = results[0].plot(img=frame, line_width=3, font_size=0.8)
 
             # 更新和绘制轨迹
-            boxes = all_detections.boxes.xywh.cpu()
-            track_ids = all_detections.boxes.id.int().cpu().tolist()
+            boxes = results[0].boxes.xywh.cpu()
+            track_ids = results[0].boxes.id.int().cpu().tolist()
             for box, track_id in zip(boxes, track_ids):
                 x, y, w, h = box
                 track = track_history[track_id]
                 track.append((float(x), float(y)))  # 记录目标中心点
+
+
+
             annotated_frame = draw_tracks(anno_frame, track_history)
         else:
             # 没有跟踪结果时，只绘制原始帧和现有轨迹
@@ -343,7 +362,7 @@ with tqdm(total=total_frames, desc="Processing Video", unit="frame") as pbar:
             f"Progress: {(pbar.n/total_frames)*100:.1f}%",
             f"Speed: {1/frame_time:.1f} FPS" if frame_time > 0 else "Speed: Calculating...",
             f"Objects: {len(track_ids) if 'track_ids' in locals() else 0}",
-            f"Tracker: ByteTrack (Improved) | Yellow ID = Track Start Point",
+            f"Tracker: {current_tracker.upper()}{' (Default)' if current_tracker == 'botsort' else ''} | Yellow ID = Track Start Point",
             f"Q:Exit | R:Reset | F:Fullscreen | Space:Pause | Click for coordinates"
         ]
 
@@ -352,24 +371,30 @@ with tqdm(total=total_frames, desc="Processing Video", unit="frame") as pbar:
             cv2.putText(resized_image, text, (20, 35 + i*25),
                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
 
-        # 显示处理后的图像
-        cv2.imshow(window_name, resized_image)
-
-        # 初始化窗口设置（只在第一次显示时执行）
-        if not window_initialized:
+        # 显示处理后的图像（仅在GUI可用时）
+        if gui_available:
             try:
-                # 等待窗口完全创建
-                cv2.waitKey(1)
-                cv2.resizeWindow(window_name, 1280, 720)  # 设置默认窗口大小为720p
-                cv2.moveWindow(window_name, 100, 100)  # 设置窗口初始位置
-                window_initialized = True
-                print("✅ Window size and position set")
-            except cv2.error as e:
-                print(f"⚠️ Window setup failed: {e}")
-                window_initialized = True  # 避免重复尝试
+                cv2.imshow(window_name, resized_image)
 
-        # 延迟设置鼠标回调（在窗口稳定后）
-        if window_initialized and not mouse_callback_set and pbar.n > 10:
+                # 初始化窗口设置（只在第一次显示时执行）
+                if not window_initialized:
+                    try:
+                        # 等待窗口完全创建
+                        cv2.waitKey(1)
+                        cv2.resizeWindow(window_name, 1280, 720)  # 设置默认窗口大小为720p
+                        cv2.moveWindow(window_name, 100, 100)  # 设置窗口初始位置
+                        window_initialized = True
+                        print("✅ Window size and position set")
+                    except cv2.error as e:
+                        print(f"⚠️ Window setup failed: {e}")
+                        window_initialized = True  # 避免重复尝试
+            except cv2.error as e:
+                print(f"⚠️ 图像显示失败: {e}")
+                gui_available = False
+                print("⚠️ 切换到无GUI模式")
+
+        # 延迟设置鼠标回调（在窗口稳定后且GUI可用时）
+        if gui_available and window_initialized and not mouse_callback_set and pbar.n > 10:
             try:
                 # 检查窗口是否存在
                 if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) >= 1:
@@ -383,66 +408,67 @@ with tqdm(total=total_frames, desc="Processing Video", unit="frame") as pbar:
                 print(f"⚠️ 鼠标回调设置失败: {e}")
                 mouse_callback_set = True  # 避免重复尝试
 
-        # 保存处理后的图像（每30帧保存一次）
-        if pbar.n % 30 == 0:  # 每30帧保存一张
-            output_dir = "tracking_output_multi_thread"
-            output_path = f"{output_dir}/frame_{pbar.n:06d}.jpg"
-            os.makedirs(output_dir, exist_ok=True)
-            cv2.imwrite(output_path, resized_image)
-            print(f"保存图片: {output_path}")
+
 
         # 更新进度条
         pbar.update(1)
 
-        # 键盘事件处理
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord("q"):  # 按Q退出
-            break
-        elif key == ord("r"):  # 按R重置窗口大小
-            try:
-                cv2.resizeWindow(window_name, 1280, 720)
-                cv2.moveWindow(window_name, 100, 100)
-                print("✅ Window reset to default size")
-            except cv2.error as e:
-                print(f"⚠️ Window reset failed: {e}")
-        elif key == ord("f"):  # 按F切换全屏
-            try:
-                if not is_fullscreen:
-                    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-                    is_fullscreen = True
-                    print("✅ Fullscreen mode enabled")
-                else:
-                    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
-                    is_fullscreen = False
-                    print("✅ Windowed mode enabled")
-            except cv2.error as e:
-                print(f"⚠️ Fullscreen toggle failed: {e}")
-        elif key == ord(" "):  # 按空格暂停/继续
-            is_paused = not is_paused
-            if is_paused:
-                print("⏸️ Paused - Press SPACE to resume")
-                while is_paused:
-                    key = cv2.waitKey(30) & 0xFF
-                    if key == ord(" "):
-                        is_paused = False
-                        print("▶️ Resumed")
-                    elif key == ord("q"):
-                        break
+        # 键盘事件处理（仅在GUI可用时）
+        if gui_available:
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("q"):  # 按Q退出
+                break
+            elif key == ord("r"):  # 按R重置窗口大小
+                try:
+                    cv2.resizeWindow(window_name, 1280, 720)
+                    cv2.moveWindow(window_name, 100, 100)
+                    print("✅ Window reset to default size")
+                except cv2.error as e:
+                    print(f"⚠️ Window reset failed: {e}")
+            elif key == ord("f"):  # 按F切换全屏
+                try:
+                    if not is_fullscreen:
+                        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+                        is_fullscreen = True
+                        print("✅ Fullscreen mode enabled")
+                    else:
+                        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
+                        is_fullscreen = False
+                        print("✅ Windowed mode enabled")
+                except cv2.error as e:
+                    print(f"⚠️ Fullscreen toggle failed: {e}")
+            elif key == ord(" "):  # 按空格暂停/继续
+                is_paused = not is_paused
+                if is_paused:
+                    print("⏸️ Paused - Press SPACE to resume")
+                    while is_paused:
+                        key = cv2.waitKey(30) & 0xFF
+                        if key == ord(" "):
+                            is_paused = False
+                            print("▶️ Resumed")
+                        elif key == ord("q"):
+                            break
+            elif key == ord("t"):  # 按T切换跟踪器
+                # 切换跟踪器类型
+                current_idx = AVAILABLE_TRACKERS.index(current_tracker)
+                current_tracker = AVAILABLE_TRACKERS[(current_idx + 1) % len(AVAILABLE_TRACKERS)]
+                tracker_config = get_tracker_config(current_tracker)
+                print(f"🔄 切换到跟踪器: {current_tracker}")
+
 
 # 清理资源和显示统计信息
 print("\n🔄 正在清理资源...")
 
-# 保存最后一帧
-if 'resized_image' in locals():
-    output_dir = "tracking_output_multi_thread"
-    os.makedirs(output_dir, exist_ok=True)
-    cv2.imwrite(f"{output_dir}/final_frame.jpg", resized_image)
-    print(f"✅ 最后一帧已保存为 {output_dir}/final_frame.jpg")
+
 
 # 释放视频捕获对象和窗口
 cap.release()
-cv2.destroyAllWindows()
+if gui_available:
+    cv2.destroyAllWindows()
 print("✅ 资源清理完成")
+
+# 显示跟踪统计
+print(f"✅ 跟踪完成，共处理 {len(track_history)} 个目标轨迹")
 
 # 计算并显示性能统计
 if frame_processing_times:
