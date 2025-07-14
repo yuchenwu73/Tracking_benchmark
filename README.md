@@ -15,26 +15,25 @@
 
 ### 一键运行（推荐）
 ```bash
-# 1. 批量处理所有验证视频（推荐）
-python simple_batch_tracking.py --input_dir data/val --output_dir results
+# 1. 批量处理所有验证视频（必选）
+python simple_batch_tracking.py --input_dir data/val --timestamp
 
-# 2. 实时跟踪单个视频（支持GUI）
+# 2. 实时跟踪单个视频（支持GUI）（可选）
 python uav_tracking_multi_thread.py data/val/16-4.avi
 
-# 3. 跟踪器性能比较
+# 3. 跟踪器性能比较 （可选）
 python tracker_comparison.py --input_dir data/val --tracker all
 
-# 4. 结果格式验证
+# 4. 结果格式验证（可选）
 python test_competition_format.py --results_dir results
 
-# 5. 质量评估
+# 5. 质量评估（可选）
 python self_evaluation.py --results_dir results
 ```
 
 ### 🎯 核心特性
 - ✅ **官方跟踪器**: 使用 Ultralytics BoT-SORT（默认，启用ReID）和 ByteTrack
 - ✅ **小目标优化**: 专门针对卫星视频中的小目标车辆检测优化
-- ✅ **实时处理**: 支持 8K 视频实时跟踪（~25 FPS）
 - ✅ **GUI 界面**: 可视化跟踪结果，支持跟踪器切换（按 T 键）
 - ✅ **批量处理**: 自动处理多个视频文件
 - ✅ **比赛格式**: 输出符合比赛要求的10字段MOT格式结果

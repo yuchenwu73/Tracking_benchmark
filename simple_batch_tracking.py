@@ -1,5 +1,5 @@
-# 运行命令示例：
-# python simple_batch_tracking.py --input_dir data/test
+# 命令示例：
+# python simple_batch_tracking.py --input_dir data/val --timestamp
 
 import os
 import argparse
@@ -31,18 +31,101 @@ def save_competition_results(tracking_results, video_name, output_dir="results")
     print(f"比赛结果已保存到: {output_file}")
     return output_file
 
-def create_competition_zip(results_dir="results", zip_name="results.zip"):
-    """创建符合比赛要求的压缩包"""
+def create_competition_zip(results_dir="results"):
+    """创建符合比赛要求的压缩包，压缩包名与目录同名"""
+    # 检查结果目录是否存在
+    if not os.path.exists(results_dir):
+        print(f"❌ 结果目录不存在: {results_dir}")
+        return None
+
+    # 生成与目录同名的压缩包
+    dir_name = os.path.basename(results_dir.rstrip('/'))
+    zip_name = f"{dir_name}.zip"
+
+    # 统计文件数量
+    txt_files = []
+    for root, dirs, files in os.walk(results_dir):
+        for file in files:
+            if file.endswith('.txt'):
+                txt_files.append(os.path.join(root, file))
+
+    if not txt_files:
+        print(f"⚠️  警告: 在 {results_dir} 中没有找到 .txt 文件")
+        return None
+
+    print(f"📁 找到 {len(txt_files)} 个结果文件")
+
+    # 创建压缩包
     with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(results_dir):
-            for file in files:
-                if file.endswith('.txt'):
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.join('results', file)
-                    zipf.write(file_path, arcname)
-    
-    print(f"比赛压缩包已创建: {zip_name}")
+        for file_path in txt_files:
+            file_name = os.path.basename(file_path)
+            # 压缩包内保持原始文件名结构
+            arcname = os.path.join('results', file_name)
+            zipf.write(file_path, arcname)
+            print(f"  ✅ 添加文件: {file_name}")
+
+    # 验证压缩包
+    file_size = os.path.getsize(zip_name)
+    print(f"📦 比赛压缩包已创建: {zip_name}")
+    print(f"📊 压缩包大小: {file_size / 1024:.2f} KB")
+
     return zip_name
+
+def verify_competition_zip(zip_file):
+    """验证比赛压缩包的内容和格式"""
+    if not os.path.exists(zip_file):
+        print(f"❌ 压缩包不存在: {zip_file}")
+        return False
+
+    print(f"\n🔍 验证压缩包: {zip_file}")
+
+    try:
+        with zipfile.ZipFile(zip_file, 'r') as zipf:
+            file_list = zipf.namelist()
+
+            print(f"📋 压缩包内容 ({len(file_list)} 个文件):")
+
+            valid_files = 0
+            for file_name in file_list:
+                print(f"  📄 {file_name}")
+
+                # 检查文件路径格式
+                if file_name.startswith('results/') and file_name.endswith('.txt'):
+                    valid_files += 1
+
+                    # 验证文件内容格式 (检查前几行)
+                    try:
+                        with zipf.open(file_name) as f:
+                            lines = f.read().decode('utf-8').strip().split('\n')
+                            if lines and lines[0]:  # 有内容
+                                first_line = lines[0]
+                                parts = first_line.split(',')
+                                if len(parts) == 10:
+                                    print(f"    ✅ 格式正确 ({len(lines)} 行数据)")
+                                else:
+                                    print(f"    ⚠️  格式可能有问题: {len(parts)} 个字段 (期望10个)")
+                            else:
+                                print(f"    ⚠️  文件为空")
+                    except Exception as e:
+                        print(f"    ❌ 读取文件出错: {e}")
+                else:
+                    print(f"    ⚠️  文件路径格式不正确")
+
+            print(f"\n📊 验证结果:")
+            print(f"  - 总文件数: {len(file_list)}")
+            print(f"  - 有效文件数: {valid_files}")
+            print(f"  - 压缩包大小: {os.path.getsize(zip_file) / 1024:.2f} KB")
+
+            if valid_files == len(file_list) and valid_files > 0:
+                print(f"  ✅ 压缩包验证通过!")
+                return True
+            else:
+                print(f"  ⚠️  压缩包可能有问题")
+                return False
+
+    except Exception as e:
+        print(f"❌ 验证压缩包时出错: {e}")
+        return False
 
 def process_video_simple(video_path, model, output_dir):
     """
@@ -97,12 +180,11 @@ def main():
     parser.add_argument('--output_dir', type=str, default='results', help='输出结果目录')
     parser.add_argument('--timestamp', action='store_true', help='在输出目录名中添加时间戳')
     parser.add_argument('--model_path', type=str, 
-                       default='/data2/wuyuchen/Tracking_benchmark/runs/train/20250809_2327_yolo11m_imgsz1280_epoch300_bs8/weights/best.pt',
+                       default='runs/train/20250712_1824_no_pretrain_yolo11x_imgsz1280_epoch300_bs4/weights/best.pt',
                        help='YOLO模型路径')
     parser.add_argument('--video_extensions', nargs='+', 
                        default=['*.avi', '*.mp4', '*.mov', '*.MOV'], 
                        help='视频文件扩展名')
-    
     args = parser.parse_args()
     
     print("🚀 简化版批量视频跟踪处理开始")
@@ -157,6 +239,10 @@ def main():
     # 创建压缩包
     print(f"\n📦 创建比赛提交压缩包...")
     zip_file = create_competition_zip(args.output_dir)
+
+    # 验证压缩包
+    if zip_file:
+        verify_competition_zip(zip_file)
     
     # 显示总结
     end_time = time.time()

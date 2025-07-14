@@ -115,7 +115,7 @@ def draw_tracks(frame, track_history):
 
 # 初始化YOLO模型
 # 使用预训练的权重文件'best.pt'
-model = YOLO("/data2/wuyuchen/Tracking_benchmark/runs/train/20250809_2327_yolo11m_imgsz1280_epoch300_bs8/weights/best.pt")
+model = YOLO("runs/train/20250713_2347_yolo11n_imgsz1280_epoch400_bs82/weights/best.pt")
 
 # 初始化跟踪器类型
 # 使用官方YOLO内置跟踪器，更稳定可靠

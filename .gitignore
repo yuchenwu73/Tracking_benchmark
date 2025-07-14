@@ -51,19 +51,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Translations
-*.mo
-*.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
 
 # Scrapy stuff:
 .scrapy
@@ -200,14 +188,7 @@ Thumbs.db
 *.swo
 *~
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+
 
 # CUDA cache
 .nv/
@@ -239,3 +220,7 @@ Thumbs.db
 !Scripts/
 Scripts/output/
 Scripts/temp/
+
+
+# Files ignored by my project
+*.zip
